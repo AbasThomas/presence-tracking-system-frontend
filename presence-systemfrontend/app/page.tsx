@@ -58,7 +58,7 @@ const randomId = () =>
 export default function Home() {
   const [wsUrl, setWsUrl] = useState(defaultWs);
   const [userId, setUserId] = useState(randomId);
-  const [username, setUsername] = useState("Nova Collins");
+  const [username, setUsername] = useState("Thomas Abas");
   const [roomId, setRoomId] = useState("mission-control");
   const [status, setStatus] = useState<"disconnected" | "connecting" | "connected">(
     "disconnected",
@@ -144,6 +144,13 @@ export default function Home() {
       `/topic/room/${room}`,
       (message: IMessage) => {
         const payload: WireMessage = JSON.parse(message.body);
+
+        // Handle presence updates broadcasted to the room
+        if (payload.type === "ROOM_PRESENCE" && payload.data) {
+          setPresence(payload.data as RoomPresence);
+        }
+
+        // Handle system messages / logs
         if (payload.content) {
           addLog({
             content: payload.content,
@@ -273,272 +280,324 @@ export default function Home() {
 
       {!connectionReady ? (
         /* Gateway Experience */
-        <div className="flex-1 flex items-center justify-center z-10 p-6 animate-in fade-in zoom-in duration-700">
-          <div className="w-full max-w-md hub-glass rounded-[2.5rem] p-10 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] to-transparent pointer-events-none" />
+        <div className="flex-1 flex items-center justify-center z-10 p-6 animate-in fade-in zoom-in duration-1000">
+          <div className="w-full max-w-lg relative">
+            {/* Outer Glow / Aura */}
+            <div className="absolute -inset-24 bg-emerald-500/10 blur-[100px] rounded-full animate-slow-pulse" />
 
-            <div className="flex flex-col items-center mb-10 text-center">
-              <div className="h-16 w-16 rounded-2xl bg-emerald-500 mb-6 flex items-center justify-center shadow-2xl shadow-emerald-500/40 rotate-[10deg] group-hover:rotate-[0deg] transition-transform duration-700">
-                <div className="h-8 w-8 bg-white/30 rounded-lg" />
-              </div>
-              <h1 className="text-4xl font-display font-bold tracking-tight mb-2">Command Center</h1>
-              <p className="text-sm text-white/40 font-medium">Configure identity to establish uplink</p>
-            </div>
+            <div className="hub-glass rounded-[3rem] p-12 relative overflow-hidden group border-white/10">
+              {/* Scanline Effect */}
+              <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(16,185,129,0.02)_50%)] bg-[length:100%_4px] pointer-events-none" />
 
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] ml-1">Identity Tag</label>
-                <div className="relative">
-                  <input
-                    className="input-field pl-11"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="e.g. Nova Collins"
-                  />
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M12 7a4 4 0 100-8 4 4 0 000 8z" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+              <div className="relative z-10">
+                <div className="flex flex-col items-center mb-12 text-center">
+                  <div className="relative mb-8 group-hover:scale-110 transition-transform duration-700">
+                    <div className="absolute inset-0 bg-emerald-500 blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
+                    <div className="h-20 w-20 rounded-[2rem] bg-emerald-500 flex items-center justify-center shadow-2xl shadow-emerald-500/50 relative z-10 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" />
+                      <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <h1 className="text-5xl font-display font-bold tracking-tighter mb-3 bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent">
+                    CORE_GATEWAY
+                  </h1>
+                  <div className="flex items-center gap-2">
+                    <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-[10px] font-mono font-bold text-white/30 uppercase tracking-[0.4em]">Awaiting Uplink Synchronization</p>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] ml-1">Sector Destination</label>
-                <div className="relative">
-                  <input
-                    className="input-field pl-11"
-                    value={roomId}
-                    onChange={(e) => setRoomId(e.target.value)}
-                    placeholder="e.g. mission-control"
-                  />
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 gap-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">User_Identity</label>
+                        <span className="text-[9px] font-mono text-emerald-500/40 font-bold">ALPHA_v4</span>
+                      </div>
+                      <div className="relative group/input">
+                        <input
+                          className="input-field pl-12 h-14 bg-white/[0.02] border-white/5 hover:border-emerald-500/30 focus:border-emerald-500/50 transition-all duration-500 text-lg font-display tracking-tight"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          placeholder="Thomas Abas"
+                        />
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within/input:text-emerald-500/50 transition-colors">
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 7a4 4 0 100-8 4 4 0 000 8z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] ml-1">Sector_Coordinate</label>
+                        <span className="text-[9px] font-mono text-emerald-500/40 font-bold">NODE_LOCK</span>
+                      </div>
+                      <div className="relative group/input">
+                        <input
+                          className="input-field pl-12 h-14 bg-white/[0.02] border-white/5 hover:border-emerald-500/30 focus:border-emerald-500/50 transition-all duration-500 text-lg font-display tracking-tight"
+                          value={roomId}
+                          onChange={(e) => setRoomId(e.target.value)}
+                          placeholder="mission-control"
+                        />
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within/input:text-emerald-500/50 transition-colors">
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
+                  {error && (
+                    <div className="p-4 rounded-2xl bg-red-500/5 border border-red-500/20 text-red-400 text-[10px] font-mono font-bold text-center animate-in shake duration-500">
+                      <span className="opacity-50">CRITICAL_ERROR:</span> {error.toUpperCase()}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={connectAndJoin}
+                    disabled={status === "connecting"}
+                    className="button-primary w-full h-16 text-lg font-display font-bold uppercase tracking-widest relative overflow-hidden group/btn"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-400 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" />
+                    <span className="relative z-10 flex items-center justify-center gap-3">
+                      {status === "connecting" ? (
+                        <>
+                          <div className="h-5 w-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                          Synchronizing...
+                        </>
+                      ) : (
+                        <>ESTABLISH_UPLINK</>
+                      )}
+                    </span>
+                  </button>
                 </div>
-              </div>
 
-              {error && (
-                <div className="p-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-400 text-[11px] font-bold text-center animate-in shake duration-500">
-                  SIGNAL_INTERRUPTED: {error.toUpperCase()}
+                <div className="mt-12 flex justify-between items-center opacity-40 hover:opacity-100 transition-opacity">
+                  <div className="flex gap-4">
+                    <div className="h-[2px] w-8 bg-emerald-500 rounded-full" />
+                    <div className="h-[2px] w-4 bg-white/20 rounded-full" />
+                    <div className="h-[2px] w-4 bg-white/20 rounded-full" />
+                  </div>
+                  <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-white/30">Protocol_v1.0.8 // THOMAS_ABAS</span>
                 </div>
-              )}
-
-              <button
-                onClick={connectAndJoin}
-                disabled={status === "connecting"}
-                className="button-primary w-full mt-4"
-              >
-                {status === "connecting" ? (
-                  <>
-                    <div className="h-4 w-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                    Establishing Uplink...
-                  </>
-                ) : (
-                  <>Establish Uplink</>
-                )}
-              </button>
-            </div>
-
-            <div className="mt-8 flex justify-center gap-6">
-              <div className="flex flex-col items-center opacity-20 hover:opacity-100 transition-opacity cursor-default">
-                <span className="text-[9px] font-bold uppercase tracking-widest mb-1 text-emerald-400">STOMP_ACTIVE</span>
-                <div className="h-[2px] w-4 bg-emerald-500 rounded-full" />
-              </div>
-              <div className="flex flex-col items-center opacity-20 hover:opacity-100 transition-opacity cursor-default">
-                <span className="text-[9px] font-bold uppercase tracking-widest mb-1">SOCKJS_READY</span>
-                <div className="h-[2px] w-4 bg-white rounded-full" />
               </div>
             </div>
           </div>
         </div>
       ) : (
-        /* Command Hub Dashboard */
-        <div className="flex-1 flex z-10 p-6 gap-6 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-          {/* Sidebar Navigation */}
-          <aside className="w-72 hub-glass rounded-[2rem] flex flex-col overflow-hidden">
-            <div className="p-8">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="h-8 w-8 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                  <div className="h-4 w-4 bg-white/30 rounded-md" />
+        /* Command Hub 2.0 - Tactical HUD */
+        <div className="flex-1 flex flex-col z-10 p-4 gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 relative">
+
+          {/* Top HUD Bar */}
+          <header className="h-20 tactical-glass rounded-3xl flex items-center justify-between px-8 border-white/10 relative overflow-hidden group">
+            <div className="absolute inset-0 grid-overlay opacity-20 pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+                  <div className="h-4 w-4 bg-emerald-500 rounded-sm animate-pulse" />
                 </div>
-                <h1 className="text-xl font-display font-bold tracking-tight">Hub v1.2</h1>
+                <div>
+                  <h2 className="text-xl font-display font-bold tracking-tight">
+                    <span className="text-white/20 font-light">HUB:</span> {activeTab === 'room' ? `SECTOR_${roomId.toUpperCase()}` : activeTab === 'global' ? 'NETWORK_GRID' : 'SIGNAL_STREAM'}
+                  </h2>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">{username} // UPLINK_STABLE</span>
+                  </div>
+                </div>
               </div>
-              <div className="h-[1px] w-full bg-white/5" />
             </div>
 
-            <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+            <div className="relative z-10 flex gap-4">
+              <div className="flex flex-col items-end justify-center px-4 border-r border-white/5">
+                <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Latency</span>
+                <span className="text-xs font-mono font-bold text-emerald-500/80">12MS_SYNC</span>
+              </div>
+              <button
+                onClick={sendPing}
+                className="h-10 px-6 rounded-xl bg-white/[0.03] hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/30 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 group/ping"
+              >
+                <span className="group-hover:text-emerald-400">Transmit_Ping</span>
+              </button>
+            </div>
+          </header>
+
+          <div className="flex-1 flex gap-4 min-h-0">
+            {/* Left HUD Panel - System Nav */}
+            <aside className="w-20 tactical-glass rounded-[2rem] flex flex-col items-center py-8 gap-6 border-white/10 relative overflow-hidden">
+              <div className="absolute inset-0 grid-overlay opacity-10 pointer-events-none" />
+
               <button
                 onClick={() => setActiveTab("room")}
-                className={clsx("sidebar-link w-full", activeTab === "room" && "sidebar-link-active")}
+                className={clsx(
+                  "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-500 relative group/nav",
+                  activeTab === "room" ? "bg-emerald-500 text-black shadow-lg shadow-emerald-500/40" : "text-white/20 hover:text-white/60 hover:bg-white/5"
+                )}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Room Operations
+                {activeTab === "room" && <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-4 bg-emerald-500 rounded-full blur-[2px]" />}
               </button>
+
               <button
                 onClick={() => setActiveTab("global")}
-                className={clsx("sidebar-link w-full", activeTab === "global" && "sidebar-link-active")}
+                className={clsx(
+                  "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-500 relative group/nav",
+                  activeTab === "global" ? "bg-emerald-500 text-black shadow-lg shadow-emerald-500/40" : "text-white/20 hover:text-white/60 hover:bg-white/5"
+                )}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Global Grid
+                {activeTab === "global" && <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-4 bg-emerald-500 rounded-full blur-[2px]" />}
               </button>
+
               <button
                 onClick={() => setActiveTab("logs")}
-                className={clsx("sidebar-link w-full", activeTab === "logs" && "sidebar-link-active")}
+                className={clsx(
+                  "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-500 relative group/nav",
+                  activeTab === "logs" ? "bg-emerald-500 text-black shadow-lg shadow-emerald-500/40" : "text-white/20 hover:text-white/60 hover:bg-white/5"
+                )}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M13 10V3L4 14H11V21L20 10H13Z" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Signal Stream
+                {activeTab === "logs" && <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-4 bg-emerald-500 rounded-full blur-[2px]" />}
               </button>
 
-              <div className="pt-10 px-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-6">ACTIVE MONITORING</p>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-white/40">Inhabitants</span>
-                    <span className="text-sm font-display font-bold text-white/80">{presence?.userCount ?? 0}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-white/40">Active Nodes</span>
-                    <span className="text-sm font-display font-bold text-white/80">{stats?.activeRooms ?? 0}</span>
-                  </div>
-                  <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 shadow-[0_0_10px_#10b981] transition-all duration-1000"
-                      style={{ width: `${Math.min((stats?.onlineUsers ?? 0) * 10, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </nav>
-
-            <div className="p-6">
-              <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981] animate-slow-pulse" />
-                  <span className="text-xs font-bold text-emerald-400/80 tracking-tight">System Nominal</span>
+              <div className="mt-auto pb-4 flex flex-col items-center gap-6">
+                <div className="flex flex-col items-center gap-1 group/stat">
+                  <div className="text-[10px] font-mono font-bold text-white/20 group-hover:text-emerald-500/50 transition-colors uppercase vertical-text">Active</div>
+                  <div className="text-xs font-mono font-bold text-white/40">{presence?.userCount ?? 0}</div>
                 </div>
                 <button
                   onClick={disconnect}
-                  className="w-full py-2 text-[10px] font-bold text-white/20 hover:text-red-400 transition-colors uppercase tracking-[0.2em] border border-white/5 hover:border-red-400/20 rounded-lg"
+                  className="h-10 w-10 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-black border border-red-500/20 transition-all flex items-center justify-center"
                 >
-                  Terminate Link
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
               </div>
-            </div>
-          </aside>
+            </aside>
 
-          {/* Main Monitor Area */}
-          <div className="flex-1 flex flex-col gap-6">
-            <header className="h-24 hub-glass rounded-[2rem] flex items-center justify-between px-10">
-              <div>
-                <h2 className="text-2xl font-display font-bold tracking-tight">
-                  <span className="text-white/20 font-light">CMD: </span>
-                  {activeTab === 'room' ? `SECTOR_${roomId.toUpperCase()}` : activeTab === 'global' ? 'GLOBAL_NETWORK' : 'SIGNAL_HISTORY'}
-                </h2>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="glow-pill">Live Update</span>
-                  <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">{username} // 08.02.26</span>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <button onClick={sendPing} className="h-10 px-6 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95">Send Ping</button>
-                <div className="h-10 px-6 rounded-xl bg-white/[0.03] border border-white/5 flex items-center">
-                  <span className="text-[10px] font-mono font-bold text-emerald-500/80">LATENCY: 12ms</span>
-                </div>
-              </div>
-            </header>
+            {/* Main Content Viewport */}
+            <main className="flex-1 flex flex-col gap-4 min-w-0">
+              <div className="flex-1 tactical-glass rounded-[2rem] overflow-hidden flex flex-col border-white/10 relative group/viewport">
+                <div className="absolute inset-0 grid-overlay opacity-[0.03] pointer-events-none" />
 
-            <div className="flex-1 hub-glass rounded-[2rem] overflow-hidden flex flex-col">
-              <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
-                {activeTab === "room" && (
-                  <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {(!presence?.users || presence.users.length === 0) && (
-                        <div className="col-span-full border border-dashed border-white/5 rounded-[2rem] p-32 text-center">
-                          <p className="text-sm font-display font-medium text-white/10 uppercase tracking-[0.4em]">Grid Empty / Scanning for Signals</p>
-                        </div>
-                      )}
-                      {presence?.users.map((user) => (
-                        <div key={user.userId} className="card-glass rounded-3xl p-6 flex items-start gap-4 h-40">
-                          <div className="relative">
-                            {avatar(user)}
-                            <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-[#0d0f14] bg-emerald-500" />
+                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar relative z-10">
+                  {activeTab === "room" && (
+                    <div className="animate-in fade-in slide-in-from-right-8 duration-700">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {(!presence?.users || presence.users.length === 0) && (
+                          <div className="col-span-full h-96 border border-emerald-500/10 rounded-[2.5rem] flex flex-col items-center justify-center bg-emerald-500/[0.01] relative overflow-hidden group/empty">
+                            <div className="absolute inset-0 grid-overlay opacity-10" />
+                            <div className="h-2 w-32 bg-emerald-500/5 rounded-full mb-8 relative overflow-hidden">
+                              <div className="absolute inset-0 bg-emerald-500/30 animate-ping-scan" />
+                            </div>
+                            <p className="text-sm font-mono font-bold text-emerald-500/40 uppercase tracking-[0.4em]">Grid_Empty // Scanning_Nodes</p>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-display font-bold text-lg truncate mb-1">{user.username}</h4>
-                            <p className="text-[9px] font-mono font-bold text-white/20 uppercase tracking-widest mb-4">NODE_ID: {user.userId.slice(0, 8)}</p>
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold text-white/40 uppercase">{formatRelative(user.lastSeen)}</span>
-                              <div className="flex gap-1">
-                                {[1, 2, 3].map(i => <div key={i} className="h-1 w-2 bg-emerald-500/20 rounded-full" />)}
+                        )}
+                        {presence?.users.map((user) => (
+                          <div key={user.userId} className="node-card rounded-[2rem] p-6 flex flex-col gap-5 group/node relative">
+                            <div className="flex items-start justify-between">
+                              <div className="relative group/avatar">
+                                <div className="absolute -inset-1 bg-emerald-500/20 blur-lg rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
+                                {avatar(user)}
+                                <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-[3px] border-[#0d111a] bg-emerald-500 shadow-[0_0_10px_#10b981]" />
+                              </div>
+                              <div className="flex flex-col items-end">
+                                <span className="text-[10px] font-mono font-bold text-emerald-500/60 uppercase tracking-widest leading-none mb-1">Status_OK</span>
+                                <div className="flex gap-0.5">
+                                  {[1, 2, 3, 4].map(i => <div key={i} className="h-0.5 w-3 bg-emerald-500/20 rounded-full" />)}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="min-w-0">
+                              <h4 className="font-display font-bold text-xl truncate text-white/90 group-hover/node:text-white transition-colors">
+                                {user.username}
+                              </h4>
+                              <p className="text-[10px] font-mono font-bold text-white/20 uppercase tracking-widest mt-1">NODE_ADDR: {user.userId.slice(0, 12)}</p>
+                            </div>
+
+                            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                              <span className="text-[9px] font-bold text-white/30 uppercase tracking-tighter">Last_Pulse: {formatRelative(user.lastSeen)}</span>
+                              <div className="h-6 w-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                                <span className="text-[8px] font-mono font-bold text-emerald-500">2.4kb/s</span>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {activeTab === "global" && (
-                  <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {onlineUsers.map((user) => (
-                        <div key={`global-${user.userId}`} className="card-glass rounded-3xl p-6 flex flex-col items-center text-center">
-                          <div className="mb-4 relative">
-                            {avatar(user)}
-                            <div className="absolute inset-[-4px] rounded-2xl border border-emerald-500/10 animate-pulse" />
+                  {activeTab === "global" && (
+                    <div className="animate-in fade-in slide-in-from-right-8 duration-700">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {onlineUsers.map((user) => (
+                          <div key={`global-${user.userId}`} className="node-card rounded-[2rem] p-6 flex flex-col items-center text-center group/node">
+                            <div className="mb-4 relative">
+                              {avatar(user)}
+                              <div className="absolute inset-[-6px] rounded-[1.5rem] border border-emerald-500/10 opacity-0 group-hover/node:opacity-100 group-hover/node:scale-110 transition-all duration-500" />
+                            </div>
+                            <h4 className="font-display font-bold text-sm truncate w-full text-white/80">{user.username}</h4>
+                            <p className="text-[9px] font-mono text-emerald-500/60 font-bold uppercase tracking-widest mt-1 mb-4">@{user.currentRoom ?? 'ORBIT'}</p>
+                            <div className="w-full h-1 bg-white/5 rounded-full relative overflow-hidden">
+                              <div className="absolute inset-0 bg-emerald-500/20 group-hover:bg-emerald-500/40 transition-colors" style={{ width: '65%' }} />
+                            </div>
                           </div>
-                          <h4 className="font-display font-bold text-sm truncate w-full mb-1">{user.username}</h4>
-                          <p className="text-[9px] font-mono text-emerald-400 font-bold uppercase tracking-widest mb-4">@{user.currentRoom ?? 'ORBIT'}</p>
-                          <div className="w-full h-1 bg-white/5 rounded-full" />
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {activeTab === "logs" && (
-                  <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-8 duration-700">
-                    <div className="space-y-6">
-                      {logs.map((log, idx) => (
-                        <div key={idx} className="terminal-line group">
-                          <div className="flex items-center gap-3 mb-1">
-                            <span className="text-[9px] font-mono font-bold text-white/10 uppercase tracking-widest">{formatRelative(log.timestamp)}</span>
-                            {log.roomId && <span className="text-[9px] font-mono font-bold text-emerald-500/40 uppercase tracking-widest">[{log.roomId}]</span>}
+                  {activeTab === "logs" && (
+                    <div className="animate-in fade-in slide-in-from-right-8 duration-700 max-w-5xl mx-auto">
+                      <div className="space-y-4">
+                        {logs.map((log, idx) => (
+                          <div key={idx} className="terminal-line group relative py-2">
+                            <div className="flex items-center gap-3 mb-1">
+                              <span className="text-[9px] font-mono font-bold text-emerald-500/40 uppercase tracking-widest">{formatRelative(log.timestamp)}</span>
+                              {log.roomId && <span className="px-1.5 py-0.5 rounded bg-emerald-500/5 border border-emerald-500/10 text-[8px] font-mono font-bold text-emerald-500/60 uppercase">NODE_{log.roomId.toUpperCase()}</span>}
+                            </div>
+                            <p className="text-sm text-white/50 group-hover:text-white transition-all duration-300 leading-relaxed font-mono">
+                              <span className="text-emerald-500/30 mr-2">{">"}</span>
+                              {log.content}
+                            </p>
                           </div>
-                          <p className="text-sm text-white/60 group-hover:text-white transition-colors duration-300">
-                            {log.content}
-                          </p>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              <footer className="h-16 border-t border-white/5 px-10 flex items-center justify-between bg-black/20">
-                <div className="flex gap-10">
-                  <div className="flex items-center gap-3">
-                    <div className="h-1 w-1 rounded-full bg-white/40" />
-                    <span className="text-[9px] font-mono font-bold text-white/20 uppercase tracking-[0.2em]">Active Sessions: {stats?.activeSessions ?? 0}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-1 w-1 rounded-full bg-white/40" />
-                    <span className="text-[9px] font-mono font-bold text-white/20 uppercase tracking-[0.2em]">Traffic Volume: {stats?.totalUsers ?? 0}</span>
-                  </div>
+                  )}
                 </div>
-                <div className="text-[9px] font-mono font-bold text-emerald-500/30 uppercase tracking-[0.2em]">Protocol: STOMP_WS_v1.0</div>
-              </footer>
-            </div>
+
+                {/* Bottom Context Bar */}
+                <footer className="h-12 border-t border-white/5 px-8 flex items-center justify-between bg-black/40 relative z-20">
+                  <div className="flex gap-8">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1 w-3 bg-emerald-500/30 rounded-full" />
+                      <span className="text-[9px] font-mono font-bold text-white/20 uppercase">Network_Grid: NORMAL</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-1 w-3 bg-emerald-500/30 rounded-full" />
+                      <span className="text-[9px] font-mono font-bold text-white/20 uppercase">Global_Nodes: {stats?.onlineUsers ?? 0}</span>
+                    </div>
+                  </div>
+                  <div className="text-[9px] font-mono font-bold text-white/10 uppercase tracking-[0.3em]">SECURE_UPLINK_v1.0.8 // [#{Math.random().toString(36).slice(2, 8).toUpperCase()}]</div>
+                </footer>
+              </div>
+            </main>
           </div>
         </div>
       )}

@@ -228,6 +228,98 @@ body {
   animation: slow-pulse 3s ease-in-out infinite;
 }
 
+/* Tactical HUD 2.0 Utilities */
+.tactical-glass {
+  background: rgba(13, 17, 26, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(16, 185, 129, 0.05);
+}
+
+.node-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.node-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent, rgba(16, 185, 129, 0.05), transparent);
+  transform: translateX(-100%);
+  transition: transform 600ms;
+}
+
+.node-card:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.04);
+  transform: scale(1.02) translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.1);
+}
+
+.node-card:hover::before {
+  transform: translateX(100%);
+}
+
+.grid-overlay {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.scanline-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+      transparent 50%,
+      rgba(16, 185, 129, 0.03) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes pulse-emerald {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-pulse-emerald {
+  animation: pulse-emerald 2s infinite;
+}
+
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
+
+@keyframes ping-scan {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.animate-ping-scan {
+  animation: ping-scan 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
