@@ -48,7 +48,7 @@ type WireMessage = {
 };
 
 const defaultWs =
-  process.env.NEXT_PUBLIC_WS_URL ?? "http://localhost:8080/ws-presence";
+  process.env.NEXT_PUBLIC_WS_URL ?? "https://presence-tracking-system.pxxl.pro/ws-presence";
 
 const randomId = () =>
   typeof crypto !== "undefined"
